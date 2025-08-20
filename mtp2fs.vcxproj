@@ -128,10 +128,12 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="Com.cpp" />
+    <ClCompile Include="Funcs.cpp" />
     <ClCompile Include="mtp2fs.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Com.hpp" />
+    <ClInclude Include="Funcs.hpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

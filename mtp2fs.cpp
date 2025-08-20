@@ -7,20 +7,11 @@
 #include <codecvt>
 
 #include "Com.hpp"
+#include "Funcs.hpp"
 
 #pragma comment(lib, "PortableDeviceGUIDs.lib")
 
 using namespace Microsoft::WRL;
-
-std::string ws2s(const std::wstring& wstr)
-{
-	int wLen = WideCharToMultiByte(CP_UTF8, 0, wstr.c_str(), wstr.length(), nullptr, 0, nullptr, nullptr);
-
-	std::string result(wLen, 0);
-	WideCharToMultiByte(CP_UTF8, 0, wstr.c_str(), wstr.length(), &result[0], wLen, nullptr, nullptr);
-
-	return result;
-}
 
 enum class ManageResult
 {
@@ -47,47 +38,68 @@ ManageResult manage(bool show)
 	}
 
 	DWORD numDeviceIDs = 0;
+	DWORD numPrivDeviceIDs = 0;
 
 	manager->GetDevices(nullptr, &numDeviceIDs);
+	manager->GetPrivateDevices(nullptr, &numPrivDeviceIDs);
 
-	if(numDeviceIDs == 0)
+	if(numDeviceIDs == 0 && numPrivDeviceIDs == 0)
 	{
 		return ManageResult::NoDevices;
 	}
 
 	std::unique_ptr<wchar_t*[]> ids = std::make_unique<wchar_t*[]>(numDeviceIDs);
+	std::unique_ptr<wchar_t*[]> privIDs = std::make_unique<wchar_t*[]>(numPrivDeviceIDs);
 
 	manager->GetDevices(ids.get(), &numDeviceIDs);
+	manager->GetPrivateDevices(privIDs.get(), &numPrivDeviceIDs);
 
-	if(show)
-	{
-		std::println("Connected MTP devices:");
-		
-		for(DWORD i = 0; i < numDeviceIDs; ++i)
+	auto showDevice = [&manager](wchar_t* id)
 		{
 			DWORD deviceNameLen = 0;
-			manager->GetDeviceFriendlyName(ids[i], nullptr, &deviceNameLen);
+			manager->GetDeviceFriendlyName(id, nullptr, &deviceNameLen);
 
 			std::unique_ptr<wchar_t[]> name = std::make_unique<wchar_t[]>(deviceNameLen);
 
-			r = manager->GetDeviceFriendlyName(ids[i], name.get(), &deviceNameLen);
+			HRESULT r = manager->GetDeviceFriendlyName(id, name.get(), &deviceNameLen);
 			if(FAILED(r))
 			{
-				std::println(std::cerr, "Failed to open device {}", ws2s(ids[i]));
+				std::println(std::cerr, "Failed to open device {}", ws2s(id));
 			}
 
 			DWORD deviceDescLen = 0;
-			manager->GetDeviceDescription(ids[i], nullptr, &deviceDescLen);
+			manager->GetDeviceDescription(id, nullptr, &deviceDescLen);
 
 			std::unique_ptr<wchar_t[]> desc = std::make_unique<wchar_t[]>(deviceDescLen);
-			
-			r = manager->GetDeviceDescription(ids[i], desc.get(), &deviceDescLen);
+
+			r = manager->GetDeviceDescription(id, desc.get(), &deviceDescLen);
 			if(FAILED(r))
 			{
 				std::println(std::cerr, "Failed to read description for {}", ws2s(desc.get()));
 			}
 
 			std::println("\t{}:{} ", ws2s(name.get()), ws2s(desc.get()));
+		}
+	;
+
+	if(show)
+	{
+		if(numDeviceIDs > 0)
+		{
+			std::println("Connected MTP devices:");
+			for(DWORD i = 0; i < numDeviceIDs; ++i)
+			{
+				showDevice(ids[i]);
+			}
+		}
+
+		if(numPrivDeviceIDs > 0)
+		{
+			std::println("Connected private MTP devices:");
+			for(DWORD i = 0; i < numPrivDeviceIDs; ++i)
+			{
+				showDevice(privIDs[i]);
+			}
 		}
 	}
 	return ManageResult::OK;
