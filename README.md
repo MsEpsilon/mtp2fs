@@ -16,5 +16,5 @@ A Windows console utility application that mounts a MTP(Media Transfer Protocol)
 # Building from source
 Open the solution file `mtp2fs.sln` using Visual Studio 2022, and build from there. It doesn't get easier than this.
 
-#License
+# License
 This project uses a MIT License.
