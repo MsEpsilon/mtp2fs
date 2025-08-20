@@ -1,5 +1,5 @@
 # mtp2fs
-A Windows console application that mounts a MTP(Media Transfer Protocol) to a filesystem.
+A Windows console utility application that mounts a MTP(Media Transfer Protocol) to a filesystem.
 
 [![C++](https://img.shields.io/badge/C++-%2300599C.svg?logo=c%2B%2B&logoColor=white)](#)
 [![Visual Studio](https://custom-icon-badges.demolab.com/badge/Visual%20Studio-5C2D91.svg?&logo=visualstudio&logoColor=white)](#)
@@ -15,3 +15,6 @@ A Windows console application that mounts a MTP(Media Transfer Protocol) to a fi
 
 # Building from source
 Open the solution file `mtp2fs.sln` using Visual Studio 2022, and build from there. It doesn't get easier than this.
+
+#License
+This project uses a MIT License.
