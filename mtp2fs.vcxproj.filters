@@ -18,5 +18,13 @@
     <ClCompile Include="mtp2fs.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="Com.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="Com.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

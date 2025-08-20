@@ -6,26 +6,11 @@
 #include <unordered_map>
 #include <codecvt>
 
+#include "Com.hpp"
+
 #pragma comment(lib, "PortableDeviceGUIDs.lib")
 
 using namespace Microsoft::WRL;
-
-class COM
-{
-public:
-	COM()
-	{
-		HRESULT r = CoInitializeEx(nullptr, COINIT_APARTMENTTHREADED);
-
-		if(FAILED(r))
-			std::println(std::cerr, "CoInitialize failed.");
-	}
-
-	~COM()
-	{
-		CoUninitialize();
-	}
-};
 
 std::string ws2s(const std::wstring& wstr)
 {
