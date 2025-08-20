@@ -4,6 +4,7 @@
 #include <iostream>
 #include <wrl/client.h>
 #include <unordered_map>
+#include <codecvt>
 
 #pragma comment(lib, "PortableDeviceGUIDs.lib")
 
@@ -26,6 +27,16 @@ public:
 	}
 };
 
+std::string ws2s(const std::wstring& wstr)
+{
+	int wLen = WideCharToMultiByte(CP_UTF8, 0, wstr.c_str(), wstr.length(), nullptr, 0, nullptr, nullptr);
+
+	std::string result(wLen, 0);
+	WideCharToMultiByte(CP_UTF8, 0, wstr.c_str(), wstr.length(), &result[0], wLen, nullptr, nullptr);
+
+	return result;
+}
+
 enum class ManageResult
 {
 	Error,
@@ -33,7 +44,7 @@ enum class ManageResult
 	OK
 };
 
-ManageResult manage()
+ManageResult manage(bool show)
 {
 	ComPtr<IPortableDeviceManager> manager;
 
@@ -50,33 +61,95 @@ ManageResult manage()
 		return ManageResult::Error;
 	}
 
-	DWORD deviceIDs = 0;
+	DWORD numDeviceIDs = 0;
 
-	manager->GetDevices(nullptr, &deviceIDs);
+	manager->GetDevices(nullptr, &numDeviceIDs);
 
-	if(deviceIDs == 0)
+	if(numDeviceIDs == 0)
 	{
 		return ManageResult::NoDevices;
 	}
+
+	std::unique_ptr<wchar_t*[]> ids = std::make_unique<wchar_t*[]>(numDeviceIDs);
+
+	manager->GetDevices(ids.get(), &numDeviceIDs);
+
+	if(show)
+	{
+		std::println("Connected MTP devices:");
+		
+		for(DWORD i = 0; i < numDeviceIDs; ++i)
+		{
+			DWORD deviceNameLen = 0;
+			manager->GetDeviceFriendlyName(ids[i], nullptr, &deviceNameLen);
+
+			std::unique_ptr<wchar_t[]> name = std::make_unique<wchar_t[]>(deviceNameLen);
+
+			r = manager->GetDeviceFriendlyName(ids[i], name.get(), &deviceNameLen);
+			if(FAILED(r))
+			{
+				std::println(std::cerr, "Failed to open device {}", ws2s(ids[i]));
+			}
+
+			DWORD deviceDescLen = 0;
+			manager->GetDeviceDescription(ids[i], nullptr, &deviceDescLen);
+
+			std::unique_ptr<wchar_t[]> desc = std::make_unique<wchar_t[]>(deviceDescLen);
+			
+			r = manager->GetDeviceDescription(ids[i], desc.get(), &deviceDescLen);
+			if(FAILED(r))
+			{
+				std::println(std::cerr, "Failed to read description for {}", ws2s(desc.get()));
+			}
+
+			std::println("\t{}:{} ", ws2s(name.get()), ws2s(desc.get()));
+		}
+	}
+	return ManageResult::OK;
 }
 
 auto main(int numArgs, char **ppArgs) -> int
 {
 	COM c_;
 
-	auto r1 = manage();
-
 	std::unordered_map<std::string, int> argsDict =
 	{
 		{"--help",1},
 		{"-h", 1},
 		{"/h", 1},
-		{"--mount", 1},
-		{"-m", 1},
-		{"/m", 1}
+		{"--mount", 2},
+		{"-m", 2},
+		{"/m", 2},
+		{"--list", 3},
+		{"-l", 3},
+		{"/l", 3}
 	};
 
-	std::println("{}", ppArgs[0]);
+	bool showList = false;
+
+	for(int i = 1; i < numArgs; ++i)
+	{
+		switch(argsDict[ppArgs[i]])
+		{
+		case 1:
+			std::println("mtp2fs - Mounts a MTP device to a file system.");
+			std::println("Usage: mtp2fs [arguments]");
+			std::println("Arguments:");
+			std::println("--help, -h, /h : Shows this help message.");
+			std::println("--mount <name> <drive letter> (-m, /h): Mounts a MTP device to a specified drive.");
+			std::println("--list, -l, /l : Lists MTP devices.");
+			break;
+		case 2:
+			break;
+		case 3:
+			showList = true;
+			break;
+		default:
+			break;
+		}
+	}
+
+	auto r1 = manage(showList);
 
 	switch(r1)
 	{
