@@ -24,12 +24,21 @@
     <ClCompile Include="Funcs.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="DeviceManager.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Com.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Funcs.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="DeviceManager.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Device.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

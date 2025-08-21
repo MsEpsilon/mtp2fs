@@ -8,10 +8,12 @@
 
 #include "Com.hpp"
 #include "Funcs.hpp"
+#include "DeviceManager.hpp"
 
 #pragma comment(lib, "PortableDeviceGUIDs.lib")
 
 using namespace Microsoft::WRL;
+using namespace Devices;
 
 enum class ManageResult
 {
@@ -19,91 +21,6 @@ enum class ManageResult
 	NoDevices,
 	OK
 };
-
-ManageResult manage(bool show)
-{
-	ComPtr<IPortableDeviceManager> manager;
-
-	HRESULT r = CoCreateInstance(
-		CLSID_PortableDeviceManager,
-		nullptr,
-		CLSCTX_INPROC_SERVER,
-		IID_PPV_ARGS(manager.GetAddressOf())
-	);
-
-	if(FAILED(r) || manager == nullptr)
-	{
-		std::println(std::cerr, "PortableDeviceManager creation failed.");
-		return ManageResult::Error;
-	}
-
-	DWORD numDeviceIDs = 0;
-	DWORD numPrivDeviceIDs = 0;
-
-	manager->GetDevices(nullptr, &numDeviceIDs);
-	manager->GetPrivateDevices(nullptr, &numPrivDeviceIDs);
-
-	if(numDeviceIDs == 0 && numPrivDeviceIDs == 0)
-	{
-		return ManageResult::NoDevices;
-	}
-
-	std::unique_ptr<wchar_t*[]> ids = std::make_unique<wchar_t*[]>(numDeviceIDs);
-	std::unique_ptr<wchar_t*[]> privIDs = std::make_unique<wchar_t*[]>(numPrivDeviceIDs);
-
-	manager->GetDevices(ids.get(), &numDeviceIDs);
-	manager->GetPrivateDevices(privIDs.get(), &numPrivDeviceIDs);
-
-	auto showDevice = [&manager](wchar_t* id)
-		{
-			DWORD deviceNameLen = 0;
-			manager->GetDeviceFriendlyName(id, nullptr, &deviceNameLen);
-
-			std::unique_ptr<wchar_t[]> name = std::make_unique<wchar_t[]>(deviceNameLen);
-
-			HRESULT r = manager->GetDeviceFriendlyName(id, name.get(), &deviceNameLen);
-			if(FAILED(r))
-			{
-				std::println(std::cerr, "Failed to open device {}", ws2s(id));
-			}
-
-			DWORD deviceDescLen = 0;
-			manager->GetDeviceDescription(id, nullptr, &deviceDescLen);
-
-			std::unique_ptr<wchar_t[]> desc = std::make_unique<wchar_t[]>(deviceDescLen);
-
-			r = manager->GetDeviceDescription(id, desc.get(), &deviceDescLen);
-			if(FAILED(r))
-			{
-				std::println(std::cerr, "Failed to read description for {}", ws2s(desc.get()));
-			}
-
-			std::println("\t{}:{} ", ws2s(name.get()), ws2s(desc.get()));
-		}
-	;
-
-	if(show)
-	{
-		if(numDeviceIDs > 0)
-		{
-			std::println("Connected MTP devices:");
-			for(DWORD i = 0; i < numDeviceIDs; ++i)
-			{
-				showDevice(ids[i]);
-			}
-		}
-
-		if(numPrivDeviceIDs > 0)
-		{
-			std::println("Connected private MTP devices:");
-			for(DWORD i = 0; i < numPrivDeviceIDs; ++i)
-			{
-				showDevice(privIDs[i]);
-			}
-		}
-	}
-	return ManageResult::OK;
-}
 
 auto main(int numArgs, char **ppArgs) -> int
 {
@@ -146,20 +63,53 @@ auto main(int numArgs, char **ppArgs) -> int
 		}
 	}
 
-	auto r1 = manage(showList);
+	DeviceManager manager;
+	
+	auto deviceList = manager.EnumerateDevices();
+	 
+	int ret = 0;
 
-	switch(r1)
-	{
-	case ManageResult::Error:
-		return -1;
-	case ManageResult::NoDevices:
-		std::println("No MTP devices detected.");
-		return -2;
-	case ManageResult::OK:
-		break;
-	default:
-		std::unreachable();
-	}
+	deviceList.and_then([showList](std::vector<Device> devices) -> decltype(deviceList)
+		{
+			if(showList)
+			{
+				std::println("Connected MTP devices:");
+				for(auto& device : devices)
+				{
+					if(device.ID == L"")
+					{
+						std::println("Private MTP devices:");
+					}
+					else
+					{
+						std::println("\t {}:{}", ws2s(device.Name),  ws2s(device.Desc));
+					}
+				}
+			}
 
-	return 0;
+			return std::expected<std::vector<Device>, DeviceManager::DeviceEnumerationFailure>();
+		}
+	).or_else([&ret](DeviceManager::DeviceEnumerationFailure fail) -> decltype(deviceList)
+		{
+			switch(fail)
+			{
+			case DeviceManager::DeviceEnumerationFailure::PortableDeviceManager_Creation_Fail:
+				std::println("IPortableDeviceManager creation failed!");
+				ret = -1;
+				break;
+			case DeviceManager::DeviceEnumerationFailure::OK_NoDevices:
+				std::println("No MTP devices detected.");
+				ret = -2;
+				break;
+			default:
+				std::println("Unknown error.");
+				ret = -500;
+				break;
+			}
+
+			return std::unexpected<decltype(fail)>(fail);
+		}
+	);
+
+	return ret;
 }
