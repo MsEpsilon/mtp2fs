@@ -5,6 +5,7 @@
 #include <wrl/client.h>
 #include <unordered_map>
 #include <codecvt>
+#include <algorithm>
 
 #include "Com.hpp"
 #include "Funcs.hpp"
@@ -41,6 +42,9 @@ auto main(int numArgs, char **ppArgs) -> int
 
 	bool showList = false;
 
+	std::string requiredDevice;
+	std::string requiredDrive;
+
 	for(int i = 1; i < numArgs; ++i)
 	{
 		switch(argsDict[ppArgs[i]])
@@ -54,6 +58,19 @@ auto main(int numArgs, char **ppArgs) -> int
 			std::println("--list, -l, /l : Lists MTP devices.");
 			break;
 		case 2:
+			if (!(numArgs > i + 1))
+			{
+				std::println("--mount requires a device name.");
+				return -3;
+			}
+			if (!(numArgs > i + 2))
+			{
+				std::println("--mount requires a device letter");
+				return -4;
+			}
+
+			requiredDevice = ppArgs[i + 1];
+			requiredDrive = ppArgs[i + 2];
 			break;
 		case 3:
 			showList = true;
@@ -69,7 +86,8 @@ auto main(int numArgs, char **ppArgs) -> int
 	 
 	int ret = 0;
 
-	deviceList.and_then([showList](std::vector<Device> devices) -> decltype(deviceList)
+	//Enumerate devices:
+	auto devices = deviceList.and_then([showList](std::vector<Device> devices) -> decltype(deviceList)
 		{
 			if(showList)
 			{
@@ -87,7 +105,7 @@ auto main(int numArgs, char **ppArgs) -> int
 				}
 			}
 
-			return std::expected<std::vector<Device>, DeviceManager::DeviceEnumerationFailure>();
+			return std::expected<std::vector<Device>, DeviceManager::DeviceEnumerationFailure>(devices);
 		}
 	).or_else([&ret](DeviceManager::DeviceEnumerationFailure fail) -> decltype(deviceList)
 		{
@@ -110,6 +128,29 @@ auto main(int numArgs, char **ppArgs) -> int
 			return std::unexpected<decltype(fail)>(fail);
 		}
 	);
+
+	if (!devices.has_value()) return ret;
+
+	//Select device:
+	using PStrI = std::pair<std::string, int>;
+
+	std::vector<PStrI> dst;
+	
+	for (auto& device : devices.value())
+	{
+		auto name = ws2s(device.Name);
+		dst.emplace_back( name, EditDistance(requiredDevice, name));
+	}
+
+	std::sort(dst.begin(), dst.end(), [](const PStrI& a, const PStrI& b) -> bool
+		{
+			return a.second < b.second;
+		}
+	);
+
+	std::println("Selecting device {}", dst[0].first);
+
+	//TODO: Open device.
 
 	return ret;
 }
