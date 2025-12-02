@@ -15,6 +15,7 @@ namespace mtp2fs
         MediaDevice(const std::wstring& deviceID);
 
         bool IsValid() const noexcept;
+        int Error() const noexcept;
 
         ~MediaDevice() = default;
     };

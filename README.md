@@ -14,7 +14,9 @@ A Windows console utility application that mounts a MTP(Media Transfer Protocol)
 |--list|-l|Lists connected MTP devices.|
 
 # Building from source
-Open the solution file `mtp2fs.sln` using Visual Studio 2022, and build from there. It doesn't get easier than this.
+1. Install dokan. https://github.com/dokan-dev/dokany
+
+2. Open the solution file `mtp2fs.sln` using Visual Studio 2022, and build from there.
 
 # License
 This project uses a MIT License.

@@ -158,6 +158,7 @@ auto main(int numArgs, char **ppArgs) -> int
 
 	//TODO: Open device.
 	MediaDevice device(dst[0].ID);
+	if (!device.IsValid()) return -3 + device.Error();
 
 	return ret;
 }

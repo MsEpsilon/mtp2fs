@@ -81,3 +81,8 @@ bool MediaDevice::IsValid() const noexcept
 {
 	return _err >= 0;
 }
+
+int MediaDevice::Error() const noexcept
+{
+	return _err;
+}
