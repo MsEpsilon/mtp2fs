@@ -3,7 +3,7 @@
 #include <vector>
 #include <expected>
 
-namespace Devices
+namespace mtp2fs
 {
 	struct Device
 	{

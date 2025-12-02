@@ -131,12 +131,15 @@
     <ClCompile Include="DeviceManager.cpp" />
     <ClCompile Include="Funcs.cpp" />
     <ClCompile Include="mtp2fs.cpp" />
+    <ClCompile Include="MediaDevice.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Com.hpp" />
+    <ClInclude Include="Constants.hpp" />
     <ClInclude Include="Device.hpp" />
     <ClInclude Include="DeviceManager.hpp" />
     <ClInclude Include="Funcs.hpp" />
+    <ClInclude Include="MediaDevice.hpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

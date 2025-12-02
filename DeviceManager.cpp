@@ -4,7 +4,7 @@
 
 #include "Funcs.hpp"
 
-using namespace Devices;
+using namespace mtp2fs;
 using namespace Microsoft::WRL;
 
 DeviceManager::DeviceManager()

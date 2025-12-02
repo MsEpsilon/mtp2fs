@@ -4,7 +4,7 @@
 #include <PortableDeviceApi.h>
 #include <wrl/client.h>
 
-namespace Devices
+namespace mtp2fs
 {
 	class DeviceManager
 	{

@@ -10,11 +10,12 @@
 #include "Com.hpp"
 #include "Funcs.hpp"
 #include "DeviceManager.hpp"
+#include "MediaDevice.hpp"
 
 #pragma comment(lib, "PortableDeviceGUIDs.lib")
 
 using namespace Microsoft::WRL;
-using namespace Devices;
+using namespace mtp2fs;
 
 enum class ManageResult
 {
@@ -132,25 +133,31 @@ auto main(int numArgs, char **ppArgs) -> int
 	if (!devices.has_value()) return ret;
 
 	//Select device:
-	using PStrI = std::pair<std::string, int>;
+	struct DeviceEntry
+	{
+		std::string Name;
+		std::wstring ID;
+		int Index;
+	};
 
-	std::vector<PStrI> dst;
+	std::vector<DeviceEntry> dst;
 	
 	for (auto& device : devices.value())
 	{
 		auto name = ws2s(device.Name);
-		dst.emplace_back( name, EditDistance(requiredDevice, name));
+		dst.emplace_back( name, device.ID, EditDistance(requiredDevice, name));
 	}
 
-	std::sort(dst.begin(), dst.end(), [](const PStrI& a, const PStrI& b) -> bool
+	std::sort(dst.begin(), dst.end(), [](const DeviceEntry& a, const DeviceEntry& b) -> bool
 		{
-			return a.second < b.second;
+			return a.Index < b.Index;
 		}
 	);
 
-	std::println("Selecting device {}", dst[0].first);
+	std::println("Selecting device {}", dst[0].Name);
 
 	//TODO: Open device.
+	MediaDevice device(dst[0].ID);
 
 	return ret;
 }
