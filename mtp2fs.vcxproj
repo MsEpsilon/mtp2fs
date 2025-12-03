@@ -133,6 +133,7 @@
   <ItemGroup>
     <ClCompile Include="Com.cpp" />
     <ClCompile Include="DeviceManager.cpp" />
+    <ClCompile Include="Filesystem.cpp" />
     <ClCompile Include="Funcs.cpp" />
     <ClCompile Include="mtp2fs.cpp" />
     <ClCompile Include="MediaDevice.cpp" />
@@ -142,6 +143,7 @@
     <ClInclude Include="Constants.hpp" />
     <ClInclude Include="Device.hpp" />
     <ClInclude Include="DeviceManager.hpp" />
+    <ClInclude Include="Filesystem.hpp" />
     <ClInclude Include="Funcs.hpp" />
     <ClInclude Include="MediaDevice.hpp" />
   </ItemGroup>

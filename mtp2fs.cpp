@@ -11,11 +11,13 @@
 #include "Funcs.hpp"
 #include "DeviceManager.hpp"
 #include "MediaDevice.hpp"
+#include "Filesystem.hpp"
 
 #pragma comment(lib, "PortableDeviceGUIDs.lib")
 
 using namespace Microsoft::WRL;
 using namespace mtp2fs;
+using namespace mtp2fs::fs;
 
 enum class ManageResult
 {
@@ -160,9 +162,21 @@ auto main(int numArgs, char **ppArgs) -> int
 
 	std::println("Selecting device {}", dst[0].Name);
 
-	//TODO: Open device.
+	//Open device.
 	MediaDevice device(dst[0].ID);
 	if (!device.IsValid()) return -3 + device.Error();
+
+	//Create filesystem
+	if(requiredDrive.length() == 1)
+		std::println("Creating filesystem at drive {}:\\\\", requiredDrive);
+	else
+		std::println("Creating filesystem at path {}", requiredDrive);
+
+	Filesystem fs(requiredDrive);
+	if (fs.IsValid())
+		Sleep(10000);
+	else
+		return -5;
 
 	return ret;
 }
