@@ -3,6 +3,7 @@ A Windows console utility application that mounts a MTP(Media Transfer Protocol)
 
 [![C++](https://img.shields.io/badge/C++-%2300599C.svg?logo=c%2B%2B&logoColor=white)](#)
 [![Visual Studio](https://custom-icon-badges.demolab.com/badge/Visual%20Studio-5C2D91.svg?&logo=visualstudio&logoColor=white)](#)
+[![Hits-of-Code](https://hitsofcode.com/github/MsEpsilon/mtp2fs?exclude=)](https://hitsofcode.com/github/MsEpsilon/mtp2fs/view?exclude=) 
 [![MSBuild](https://github.com/MsEpsilon/mtp2fs/actions/workflows/msbuild.yml/badge.svg)](https://github.com/MsEpsilon/mtp2fs/actions/workflows/msbuild.yml)
 
 # Usage
