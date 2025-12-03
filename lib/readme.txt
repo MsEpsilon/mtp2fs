@@ -1,0 +1,1 @@
+Add dokan2.lib, dokanfuse2.lib and dokannp2.lib
