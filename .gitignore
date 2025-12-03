@@ -426,4 +426,7 @@ FodyWeavers.xsd
 *.msix
 *.msm
 *.msp
-*.lib
+
+#We include libs so the build in GH Actions doesn't fail (not the best practice with git) 
+.lib
+

@@ -57,7 +57,7 @@ auto main(int numArgs, char **ppArgs) -> int
 			std::println("--help, -h, /h : Shows this help message.");
 			std::println("--mount <name> <drive letter> (-m, /h): Mounts a MTP device to a specified drive.");
 			std::println("--list, -l, /l : Lists MTP devices.");
-			break;
+			return 0;
 		case 2:
 			if (!(numArgs > i + 1))
 			{
@@ -72,12 +72,15 @@ auto main(int numArgs, char **ppArgs) -> int
 
 			requiredDevice = ppArgs[i + 1];
 			requiredDrive = ppArgs[i + 2];
+
+			i += 2;
 			break;
 		case 3:
 			showList = true;
 			break;
 		default:
-			break;
+			std::println("No arguments specified! Use --help .");
+			return 0;
 		}
 	}
 
@@ -130,6 +133,7 @@ auto main(int numArgs, char **ppArgs) -> int
 		}
 	);
 
+	if (showList) return 0;
 	if (!devices.has_value()) return ret;
 
 	//Select device:
